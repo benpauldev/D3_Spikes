@@ -1,0 +1,21 @@
+	
+	.node {cursor: pointer;
+	}
+
+	.node circle {
+	  size: 5px;
+	  fill: #D3D3D3;
+	  stroke: teal;
+	  stroke-width: 2px;
+	}
+
+	.node text {
+	  font: 10px comic;
+	  text-decoration-color: #D3D3D3;
+	}
+
+	.link {
+	  fill: none;
+	  stroke: #ccc;
+	  stroke-width: 2px;
+	}
