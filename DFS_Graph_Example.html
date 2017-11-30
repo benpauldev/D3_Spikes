@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+
+    <title>Collapsible Tree Example</title>
+
+    <style>
+
+ .node circle {
+   fill: #fff;
+   stroke: steelblue;
+   stroke-width: 3px;
+ }
+
+ .node text { font: 8px sans-serif; }
+
+ .link {
+   fill: none;
+   stroke: #ccc;
+   stroke-width: 2px;
+ }
+ 
+    </style>
+
+  </head>
+
+  <body>
+
+<!-- load the d3.js library --> 
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="https://d3js.org/d3-hierarchy.v1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.min.js"></script>
+<script>
+
+(function(){
+
+ testData = {
+   "ID":"graphNodes.out",
+   "Starting_url":"http://www.anagram.com",
+   "Search_type":"DFS",
+   "graph_Node_Container":[
+      {
+         "name":"http://www.anagram.com",
+         "parent":-1,
+         "children":[
+            "http://www.silly.com",
+            "http://www.bikini.com",
+            "http://www.chopstick.com",
+            "http://www.signup.com",
+            "http://www.epoch.com",
+            "http://www.clothes.com",
+            "http://www.robin.com"
+         ]
+      },
+      {
+         "name":"http://www.robin.com",
+         "parent":0,
+         "children":[
+            "http://www.broker.com"
+         ]
+      },
+      {
+         "name":"http://www.broker.com",
+         "parent":1,
+         "children":[
+            "http://www.james.com",
+            "http://www.bail.com",
+            "http://www.covariate.com",
+            "http://www.elbow.com",
+            "http://www.palm.com",
+            "http://www.doe.com",
+            "http://www.acid.com",
+            "http://www.freighter.com",
+            "http://www.save.com",
+            "http://www.dogwood.com"
+         ]
+      },
+      {
+         "name":"http://www.palm.com",
+         "parent":2,
+         "children":[
+            "http://www.maple.com",
+            "http://www.cucumber.com",
+            "http://www.feeling.com",
+            "http://www.light.com"
+         ]
+      },
+      {
+         "name":"http://www.cucumber.com",
+         "parent":3,
+         "children":[
+            "http://www.organisation.com",
+            "http://www.student.com",
+            "http://www.fall.com",
+            "http://www.cane.com",
+            "http://www.harmony.com",
+            "http://www.lawsuit.com"
+         ]
+      },
+      {
+         "name":"http://www.fall.com",
+         "parent":4,
+         "children":[
+            "http://www.macrofauna.com",
+            "http://www.pressroom.com",
+            "http://www.kohlrabi.com",
+            "http://www.legume.com",
+            "http://www.footstool.com",
+            "http://www.serve.com",
+            "http://www.basis.com",
+            "http://www.monocle.com"
+         ]
+      },
+      {
+         "name":"http://www.legume.com",
+         "parent":5,
+         "children":[
+            "http://www.shootdown.com",
+            "http://www.kindness.com"
+         ]
+      },
+      {
+         "name":"http://www.kindness.com",
+         "parent":6,
+         "children":[
+
+         ]
+      },
+      {
+         "name":"http://www.shootdown.com",
+         "parent":6,
+         "children":[
+            "http://www.disengagement.com"
+         ]
+      },
+      {
+         "name":"http://www.disengagement.com",
+         "parent":8,
+         "children":[
+            "http://www.past.com"
+         ]
+      },
+      {
+         "name":"http://www.past.com",
+         "parent":9,
+         "children":[
+            "http://www.luck.com",
+            "http://www.chino.com",
+            "http://www.bother.com",
+            "http://www.fence.com",
+            "http://www.moment.com",
+            "http://www.forestry.com"
+         ]
+      },
+      {
+         "name":"http://www.chino.com",
+         "parent":10,
+         "children":[
+            "http://www.bankbook.com",
+            "http://www.respect.com",
+            "http://www.obesity.com",
+            "http://www.drake.com",
+            "http://www.cash.com",
+            "http://www.rivulet.com",
+            "http://www.expression.com"
+         ]
+      },
+      {
+         "name":"http://www.rivulet.com",
+         "parent":11,
+         "children":[
+            "http://www.interaction.com",
+            "http://www.boss.com",
+            "http://www.attachment.com",
+            "http://www.spectrograph.com",
+            "http://www.laryngitis.com",
+            "http://www.neologism.com",
+            "http://www.feast.com",
+            "http://www.diamond.com",
+            "http://www.overflight.com",
+            "http://www.fruit.com"
+         ]
+      },
+      {
+         "name":"http://www.fruit.com",
+         "parent":12,
+         "children":[
+            "http://www.chauffeur.com",
+            "http://www.mouse.com",
+            "http://www.maestro.com"
+         ]
+      },
+      {
+         "name":"http://www.maestro.com",
+         "parent":13,
+         "children":[
+            "http://www.spark.com",
+            "http://www.freckle.com",
+            "http://www.schooner.com",
+            "http://www.plate.com",
+            "http://www.pass.com",
+            "http://www.plowman.com",
+            "http://www.pitch.com",
+            "http://www.polenta.com"
+         ]
+      },
+      {
+         "name":"http://www.freckle.com",
+         "parent":14,
+         "children":[
+            "http://www.bottom.com",
+            "http://www.frame.com",
+            "http://www.maraca.com",
+            "http://www.patricia.com",
+            "http://www.dogwood.com",
+            "http://www.habit.com",
+            "http://www.nonconformist.com"
+         ]
+      },
+      {
+         "name":"http://www.dogwood.com",
+         "parent":15,
+         "children":[
+            "http://www.retina.com",
+            "http://www.base.com",
+            "http://www.stopsign.com",
+            "http://www.heat.com",
+            "http://www.lout.com",
+            "http://www.bath.com",
+            "http://www.sphere.com",
+            "http://www.return.com"
+         ]
+      },
+      {
+         "name":"http://www.sphere.com",
+         "parent":16,
+         "children":[
+            "http://www.overshoot.com",
+            "http://www.lout.com",
+            "http://www.ceiling.com",
+            "http://www.monster.com"
+         ]
+      },
+      {
+         "name":"http://www.overshoot.com",
+         "parent":17,
+         "children":[
+            "http://www.fusarium.com",
+            "http://www.kangaroo.com",
+            "http://www.buffer.com",
+            "http://www.bricklaying.com",
+            "http://www.oak.com",
+            "http://www.stag.com",
+            "http://www.jelly.com"
+         ]
+      },
+      {
+         "name":"http://www.kangaroo.com",
+         "parent":18,
+         "children":[
+            "http://www.intelligence.com",
+            "http://www.mariachi.com"
+         ]
+      },
+      {
+         "name":"http://www.mariachi.com",
+         "parent":19,
+         "children":[
+            "http://www.hen.com",
+            "http://www.floozie.com",
+            "http://www.analgesia.com"
+         ]
+      },
+      {
+         "name":"http://www.analgesia.com",
+         "parent":20,
+         "children":[
+            "http://www.still.com",
+            "http://www.depth.com",
+            "http://www.employ.com",
+            "http://www.garbage.com",
+            "http://www.importance.com",
+            "http://www.dwelling.com",
+            "http://www.ride.com",
+            "http://www.spend.com",
+            "http://www.shark.com",
+            "http://www.bench.com"
+         ]
+      },
+      {
+         "name":"http://www.spend.com",
+         "parent":21,
+         "children":[
+            "http://www.kind.com",
+            "http://www.expansion.com",
+            "http://www.athlete.com"
+         ]
+      },
+      {
+         "name":"http://www.athlete.com",
+         "parent":22,
+         "children":[
+            "http://www.cotton.com",
+            "http://www.jodhpurs.com",
+            "http://www.marble.com",
+            "http://www.fondue.com",
+            "http://www.machine.com"
+         ]
+      },
+      {
+         "name":"http://www.fondue.com",
+         "parent":23,
+         "children":[
+            "http://www.mercury.com",
+            "http://www.nonsense.com"
+         ]
+      },
+      {
+         "name":"http://www.mercury.com",
+         "parent":24,
+         "children":[
+            "http://www.suppression.com",
+            "http://www.bricklaying.com",
+            "http://www.carol.com",
+            "http://www.jacket.com",
+            "http://www.precedent.com",
+            "http://www.rock.com",
+            "http://www.barium.com",
+            "http://www.popcorn.com",
+            "http://www.hurricane.com",
+            "http://www.shortage.com"
+         ]
+      },
+      {
+         "name":"http://www.precedent.com",
+         "parent":25,
+         "children":[
+            "http://www.icicle.com",
+            "http://www.streetcar.com",
+            "http://www.epee.com",
+            "http://www.bugle.com",
+            "http://www.latency.com",
+            "http://www.frost.com",
+            "http://www.deep.com",
+            "http://www.great.com",
+            "http://www.eardrum.com",
+            "http://www.castle.com"
+         ]
+      },
+      {
+         "name":"http://www.deep.com",
+         "parent":26,
+         "children":[
+            "http://www.consequence.com",
+            "http://www.gymnastics.com",
+            "http://www.line.com",
+            "http://www.housing.com",
+            "http://www.ott.com",
+            "http://www.cd.com",
+            "http://www.loyalty.com",
+            "http://www.bricklaying.com",
+            "http://www.feeling.com",
+            "http://www.foot.com"
+         ]
+      },
+      {
+         "name":"http://www.consequence.com",
+         "parent":27,
+         "children":[
+            "http://www.station.com",
+            "http://www.consul.com",
+            "http://www.carnation.com",
+            "http://www.abuse.com",
+            "http://www.misplacement.com"
+         ]
+      },
+      {
+         "name":"http://www.station.com",
+         "parent":28,
+         "children":[
+            "http://www.athlete.com"
+         ]
+      },
+      {
+         "name":"http://www.consul.com",
+         "parent":28,
+         "children":[
+            "http://www.skill.com",
+            "http://www.altitude.com",
+            "http://www.bait.com",
+            "http://www.spend.com",
+            "http://www.columnist.com"
+         ]
+      },
+      {
+         "name":"http://www.bait.com",
+         "parent":30,
+         "children":[
+            "http://www.photo.com",
+            "http://www.lab.com",
+            "http://www.declination.com",
+            "http://www.opposite.com",
+            "http://www.roadway.com"
+         ]
+      },
+      {
+         "name":"http://www.lab.com",
+         "parent":31,
+         "children":[
+            "http://www.hand.com",
+            "http://www.fun.com",
+            "http://www.horn.com",
+            "http://www.drama.com",
+            "http://www.condition.com"
+         ]
+      },
+      {
+         "name":"http://www.condition.com",
+         "parent":32,
+         "children":[
+            "http://www.chalet.com",
+            "http://www.frock.com",
+            "http://www.national.com",
+            "http://www.hippodrome.com",
+            "http://www.deposit.com",
+            "http://www.organisation.com",
+            "http://www.dedication.com"
+         ]
+      },
+      {
+         "name":"http://www.frock.com",
+         "parent":33,
+         "children":[
+            "http://www.lamp.com",
+            "http://www.nightingale.com"
+         ]
+      },
+      {
+         "name":"http://www.lamp.com",
+         "parent":34,
+         "children":[
+            "http://www.hair.com",
+            "http://www.entertainment.com",
+            "http://www.interior.com",
+            "http://www.denim.com",
+            "http://www.ram.com"
+         ]
+      },
+      {
+         "name":"http://www.denim.com",
+         "parent":35,
+         "children":[
+            "http://www.high-rise.com"
+         ]
+      },
+      {
+         "name":"http://www.high-rise.com",
+         "parent":36,
+         "children":[
+            "http://www.revolve.com",
+            "http://www.salon.com",
+            "http://www.sonnet.com",
+            "http://www.cross-stitch.com",
+            "http://www.series.com",
+            "http://www.faith.com",
+            "http://www.polo.com",
+            "http://www.crowd.com",
+            "http://www.overflight.com"
+         ]
+      },
+      {
+         "name":"http://www.series.com",
+         "parent":37,
+         "children":[
+            "http://www.comportment.com",
+            "http://www.protection.com",
+            "http://www.stocking.com",
+            "http://www.surname.com",
+            "http://www.retina.com",
+            "http://www.smock.com",
+            "http://www.parchment.com",
+            "http://www.fender.com",
+            "http://www.dictaphone.com",
+            "http://www.earmuffs.com"
+         ]
+      },
+      {
+         "name":"http://www.fender.com",
+         "parent":38,
+         "children":[
+            "http://www.subconscious.com",
+            "http://www.fairies.com",
+            "http://www.suburb.com",
+            "http://www.postbox.com",
+            "http://www.fence.com",
+            "http://www.anorak.com",
+            "http://www.kneejerk.com"
+         ]
+      },
+      {
+         "name":"http://www.suburb.com",
+         "parent":39,
+         "children":[
+            "http://www.fibre.com",
+            "http://www.regret.com",
+            "http://www.quail.com",
+            "http://www.collection.com",
+            "http://www.broker.com",
+            "http://www.part.com",
+            "http://www.batting.com",
+            "http://www.gemsbok.com",
+            "http://www.sister.com"
+         ]
+      },
+      {
+         "name":"http://www.sister.com",
+         "parent":40,
+         "children":[
+            "http://www.hoe.com",
+            "http://www.guy.com",
+            "http://www.beverage.com",
+            "http://www.peer-to-peer.com",
+            "http://www.inquiry.com",
+            "http://www.goose.com",
+            "http://www.polenta.com"
+         ]
+      },
+      {
+         "name":"http://www.guy.com",
+         "parent":41,
+         "children":[
+            "http://www.arch-rival.com",
+            "http://www.blowhole.com",
+            "http://www.cellar.com",
+            "http://www.brown.com",
+            "http://www.kettledrum.com",
+            "http://www.blackboard.com",
+            "http://www.jiffy.com"
+         ]
+      },
+      {
+         "name":"http://www.blackboard.com",
+         "parent":42,
+         "children":[
+            "http://www.eyebrows.com",
+            "http://www.flock.com",
+            "http://www.mandolin.com",
+            "http://www.area.com",
+            "http://www.objective.com",
+            "http://www.return.com",
+            "http://www.mine.com",
+            "http://www.incident.com",
+            "http://www.geography.com",
+            "http://www.drag.com"
+         ]
+      },
+      {
+         "name":"http://www.objective.com",
+         "parent":43,
+         "children":[
+            "http://www.collar.com",
+            "http://www.lake.com",
+            "http://www.gold.com",
+            "http://www.surround.com",
+            "http://www.linen.com",
+            "http://www.starter.com",
+            "http://www.cream.com"
+         ]
+      },
+      {
+         "name":"http://www.cream.com",
+         "parent":44,
+         "children":[
+            "http://www.parachute.com",
+            "http://www.probation.com"
+         ]
+      },
+      {
+         "name":"http://www.probation.com",
+         "parent":45,
+         "children":[
+            "http://www.safe.com",
+            "http://www.look.com",
+            "http://www.mariachi.com",
+            "http://www.backdrop.com",
+            "http://www.bratwurst.com",
+            "http://www.club.com",
+            "http://www.proposal.com",
+            "http://www.bankbook.com"
+         ]
+      },
+      {
+         "name":"http://www.safe.com",
+         "parent":46,
+         "children":[
+            "http://www.cross-contamination.com",
+            "http://www.shrimp.com",
+            "http://www.bijou.com",
+            "http://www.strike.com",
+            "http://www.fender.com",
+            "http://www.mayonnaise.com",
+            "http://www.industry.com"
+         ]
+      },
+      {
+         "name":"http://www.shrimp.com",
+         "parent":47,
+         "children":[
+            "http://www.mail.com",
+            "http://www.blight.com"
+         ]
+      },
+      {
+         "name":"http://www.mail.com",
+         "parent":48,
+         "children":[
+            "http://www.deficit.com",
+            "http://www.glue.com",
+            "http://www.gender.com",
+            "http://www.possible.com",
+            "http://www.nanoparticle.com"
+         ]
+      },
+      {
+         "name":"http://www.nanoparticle.com",
+         "parent":49,
+         "children":[
+            "http://www.angstrom.com",
+            "http://www.astrologer.com",
+            "http://www.coast.com",
+            "http://www.fan.com",
+            "http://www.cat.com",
+            "http://www.escape.com",
+            "http://www.search.com",
+            "http://www.e-book.com"
+         ]
+      },
+      {
+         "name":"http://www.coast.com",
+         "parent":50,
+         "children":[
+            "http://www.fruit.com",
+            "http://www.map.com",
+            "http://www.support.com",
+            "http://www.pasta.com",
+            "http://www.comradeship.com",
+            "http://www.barge.com",
+            "http://www.arch.com"
+         ]
+      },
+      {
+         "name":"http://www.map.com",
+         "parent":51,
+         "children":[
+            "http://www.appointment.com",
+            "http://www.ghost.com",
+            "http://www.preoccupation.com",
+            "http://www.nightgown.com",
+            "http://www.gram.com",
+            "http://www.socks.com",
+            "http://www.cricket.com",
+            "http://www.lilac.com",
+            "http://www.hutch.com",
+            "http://www.lock.com"
+         ]
+      },
+      {
+         "name":"http://www.cricket.com",
+         "parent":52,
+         "children":[
+            "http://www.cowboy.com",
+            "http://www.phrase.com",
+            "http://www.buggy.com",
+            "http://www.nerve.com"
+         ]
+      },
+      {
+         "name":"http://www.buggy.com",
+         "parent":53,
+         "children":[
+
+         ]
+      },
+      {
+         "name":"http://www.cowboy.com",
+         "parent":53,
+         "children":[
+            "http://www.neon.com",
+            "http://www.ikebana.com",
+            "http://www.paintwork.com",
+            "http://www.emotion.com",
+            "http://www.classic.com",
+            "http://www.stay.com",
+            "http://www.rag.com",
+            "http://www.blow.com",
+            "http://www.clank.com",
+            "http://www.seed.com"
+         ]
+      },
+      {
+         "name":"http://www.neon.com",
+         "parent":55,
+         "children":[
+            "http://www.sociology.com",
+            "http://www.gerbil.com"
+         ]
+      },
+      {
+         "name":"http://www.sociology.com",
+         "parent":56,
+         "children":[
+            "http://www.speech.com",
+            "http://www.briefs.com",
+            "http://www.ease.com",
+            "http://www.dud.com",
+            "http://www.background.com",
+            "http://www.fencing.com"
+         ]
+      },
+      {
+         "name":"http://www.speech.com",
+         "parent":57,
+         "children":[
+            "http://www.shed.com",
+            "http://www.drawbridge.com",
+            "http://www.pond.com",
+            "http://www.constant.com",
+            "http://www.producer.com",
+            "http://www.precedent.com",
+            "http://www.harpsichord.com",
+            "http://www.listen.com"
+         ]
+      },
+      {
+         "name":"http://www.pond.com",
+         "parent":58,
+         "children":[
+            "http://www.surname.com"
+         ]
+      },
+      {
+         "name":"http://www.surname.com",
+         "parent":59,
+         "children":[
+            "http://www.pollution.com",
+            "http://www.application.com",
+            "http://www.function.com",
+            "http://www.periodical.com",
+            "http://www.cephalopod.com",
+            "http://www.clothing.com"
+         ]
+      },
+      {
+         "name":"http://www.application.com",
+         "parent":60,
+         "children":[
+            "http://www.pimple.com",
+            "http://www.campanile.com",
+            "http://www.goodbye.com"
+         ]
+      },
+      {
+         "name":"http://www.pimple.com",
+         "parent":61,
+         "children":[
+            "http://www.loan.com",
+            "http://www.bricklaying.com",
+            "http://www.damage.com",
+            "http://www.disadvantage.com",
+            "http://www.edward.com",
+            "http://www.loft.com",
+            "http://www.artificer.com"
+         ]
+      },
+      {
+         "name":"http://www.edward.com",
+         "parent":62,
+         "children":[
+            "http://www.skin.com",
+            "http://www.gale.com",
+            "http://www.ketchup.com",
+            "http://www.attorney.com"
+         ]
+      },
+      {
+         "name":"http://www.ketchup.com",
+         "parent":63,
+         "children":[
+            "http://www.report.com",
+            "http://www.shootdown.com",
+            "http://www.camp.com"
+         ]
+      },
+      {
+         "name":"http://www.camp.com",
+         "parent":64,
+         "children":[
+            "http://www.overclocking.com",
+            "http://www.mission.com",
+            "http://www.month.com",
+            "http://www.desire.com"
+         ]
+      },
+      {
+         "name":"http://www.desire.com",
+         "parent":65,
+         "children":[
+            "http://www.shoulder.com",
+            "http://www.addition.com",
+            "http://www.evening-wear.com"
+         ]
+      },
+      {
+         "name":"http://www.shoulder.com",
+         "parent":66,
+         "children":[
+            "http://www.planter.com",
+            "http://www.advance.com",
+            "http://www.deployment.com",
+            "http://www.read.com",
+            "http://www.poster.com",
+            "http://www.scratch.com"
+         ]
+      },
+      {
+         "name":"http://www.poster.com",
+         "parent":67,
+         "children":[
+            "http://www.spiritual.com"
+         ]
+      },
+      {
+         "name":"http://www.spiritual.com",
+         "parent":68,
+         "children":[
+            "http://www.sunbonnet.com",
+            "http://www.james.com",
+            "http://www.dresser.com",
+            "http://www.style.com",
+            "http://www.fight.com",
+            "http://www.great-grandfather.com"
+         ]
+      },
+      {
+         "name":"http://www.sunbonnet.com",
+         "parent":69,
+         "children":[
+            "http://www.compulsion.com",
+            "http://www.bunkhouse.com",
+            "http://www.ashram.com",
+            "http://www.disconnection.com",
+            "http://www.run.com",
+            "http://www.psychiatrist.com",
+            "http://www.barn.com",
+            "http://www.gloves.com"
+         ]
+      },
+      {
+         "name":"http://www.psychiatrist.com",
+         "parent":70,
+         "children":[
+            "http://www.rostrum.com",
+            "http://www.panpipe.com",
+            "http://www.disgust.com",
+            "http://www.hardcover.com",
+            "http://www.stud.com"
+         ]
+      },
+      {
+         "name":"http://www.disgust.com",
+         "parent":71,
+         "children":[
+            "http://www.deodorant.com",
+            "http://www.sourwood.com",
+            "http://www.snorer.com",
+            "http://www.investment.com",
+            "http://www.safe.com",
+            "http://www.plan.com"
+         ]
+      },
+      {
+         "name":"http://www.investment.com",
+         "parent":72,
+         "children":[
+            "http://www.emotion.com",
+            "http://www.beginning.com",
+            "http://www.ounce.com",
+            "http://www.figure.com",
+            "http://www.branch.com",
+            "http://www.glut.com"
+         ]
+      },
+      {
+         "name":"http://www.branch.com",
+         "parent":73,
+         "children":[
+            "http://www.ballpark.com",
+            "http://www.disk.com",
+            "http://www.exchange.com",
+            "http://www.dentist.com",
+            "http://www.data.com",
+            "http://www.scene.com",
+            "http://www.room.com"
+         ]
+      },
+      {
+         "name":"http://www.exchange.com",
+         "parent":74,
+         "children":[
+
+         ]
+      },
+      {
+         "name":"http://www.room.com",
+         "parent":74,
+         "children":[
+            "http://www.sweatshop.com",
+            "http://www.off-ramp.com",
+            "http://www.bandolier.com",
+            "http://www.advantage.com",
+            "http://www.pressroom.com",
+            "http://www.nonbeliever.com",
+            "http://www.shoelace.com"
+         ]
+      },
+      {
+         "name":"http://www.off-ramp.com",
+         "parent":76,
+         "children":[
+            "http://www.distribution.com",
+            "http://www.cream.com",
+            "http://www.summer.com",
+            "http://www.room.com"
+         ]
+      },
+      {
+         "name":"http://www.distribution.com",
+         "parent":77,
+         "children":[
+
+         ]
+      },
+      {
+         "name":"http://www.summer.com",
+         "parent":77,
+         "children":[
+            "http://www.pilot.com",
+            "http://www.disembodiment.com",
+            "http://www.produce.com",
+            "http://www.hot.com",
+            "http://www.hobbit.com"
+         ]
+      },
+      {
+         "name":"http://www.pilot.com",
+         "parent":79,
+         "children":[
+            "http://www.reception.com",
+            "http://www.cleat.com",
+            "http://www.crab.com",
+            "http://www.doctor.com",
+            "http://www.schooner.com",
+            "http://www.anxiety.com",
+            "http://www.source.com"
+         ]
+      },
+      {
+         "name":"http://www.doctor.com",
+         "parent":80,
+         "children":[
+            "http://www.patience.com",
+            "http://www.failure.com"
+         ]
+      },
+      {
+         "name":"http://www.patience.com",
+         "parent":81,
+         "children":[
+
+         ]
+      },
+      {
+         "name":"http://www.failure.com",
+         "parent":81,
+         "children":[
+            "http://www.domain.com",
+            "http://www.priority.com",
+            "http://www.fortune.com",
+            "http://www.look.com",
+            "http://www.shame.com",
+            "http://www.aperitif.com",
+            "http://www.replace.com",
+            "http://www.cot.com"
+         ]
+      },
+      {
+         "name":"http://www.domain.com",
+         "parent":83,
+         "children":[
+            "http://www.literature.com",
+            "http://www.pharmacist.com",
+            "http://www.communication.com",
+            "http://www.criteria.com"
+         ]
+      },
+      {
+         "name":"http://www.literature.com",
+         "parent":84,
+         "children":[
+            "http://www.game.com",
+            "http://www.studio.com",
+            "http://www.samurai.com",
+            "http://www.option.com",
+            "http://www.pike.com",
+            "http://www.softball.com",
+            "http://www.cop-out.com"
+         ]
+      },
+      {
+         "name":"http://www.studio.com",
+         "parent":85,
+         "children":[
+            "http://www.probation.com",
+            "http://www.machinery.com",
+            "http://www.helicopter.com",
+            "http://www.silence.com",
+            "http://www.lettuce.com"
+         ]
+      },
+      {
+         "name":"http://www.helicopter.com",
+         "parent":86,
+         "children":[
+            "http://www.bandana.com",
+            "http://www.body.com",
+            "http://www.earrings.com",
+            "http://www.shed.com"
+         ]
+      },
+      {
+         "name":"http://www.bandana.com",
+         "parent":87,
+         "children":[
+            "http://www.beach.com",
+            "http://www.rain.com",
+            "http://www.report.com",
+            "http://www.pump.com",
+            "http://www.rhythm.com",
+            "http://www.cartload.com",
+            "http://www.marsh.com",
+            "http://www.ringworm.com",
+            "http://www.pioneer.com",
+            "http://www.carry.com"
+         ]
+      },
+      {
+         "name":"http://www.rhythm.com",
+         "parent":88,
+         "children":[
+            "http://www.hedge.com",
+            "http://www.rose.com",
+            "http://www.hot.com",
+            "http://www.resident.com",
+            "http://www.gallon.com",
+            "http://www.chop.com",
+            "http://www.bowling.com",
+            "http://www.satellite.com"
+         ]
+      },
+      {
+         "name":"http://www.resident.com",
+         "parent":89,
+         "children":[
+            "http://www.music-box.com",
+            "http://www.pleasure.com",
+            "http://www.deer.com",
+            "http://www.screamer.com",
+            "http://www.crayon.com"
+         ]
+      },
+      {
+         "name":"http://www.screamer.com",
+         "parent":90,
+         "children":[
+            "http://www.fiberglass.com",
+            "http://www.lunge.com",
+            "http://www.remote.com",
+            "http://www.bakeware.com",
+            "http://www.remove.com",
+            "http://www.address.com",
+            "http://www.existence.com"
+         ]
+      },
+      {
+         "name":"http://www.address.com",
+         "parent":91,
+         "children":[
+            "http://www.liquid.com",
+            "http://www.league.com",
+            "http://www.breastplate.com",
+            "http://www.centimeter.com",
+            "http://www.condition.com"
+         ]
+      },
+      {
+         "name":"http://www.breastplate.com",
+         "parent":92,
+         "children":[
+            "http://www.nephew.com",
+            "http://www.bathtub.com",
+            "http://www.harpooner.com",
+            "http://www.cliff.com"
+         ]
+      },
+      {
+         "name":"http://www.nephew.com",
+         "parent":93,
+         "children":[
+
+         ]
+      },
+      {
+         "name":"http://www.cliff.com",
+         "parent":93,
+         "children":[
+            "http://www.pond.com",
+            "http://www.correspondent.com",
+            "http://www.hire.com",
+            "http://www.cabinet.com",
+            "http://www.fridge.com"
+         ]
+      },
+      {
+         "name":"http://www.fridge.com",
+         "parent":95,
+         "children":[
+            "http://www.bulldozer.com",
+            "http://www.basin.com",
+            "http://www.power.com"
+         ]
+      },
+      {
+         "name":"http://www.bulldozer.com",
+         "parent":96,
+         "children":[
+
+         ]
+      },
+      {
+         "name":"http://www.power.com",
+         "parent":96,
+         "children":[
+            "http://www.olive.com",
+            "http://www.shirt.com",
+            "http://www.fleece.com",
+            "http://www.caution.com",
+            "http://www.hearthside.com",
+            "http://www.rabbi.com",
+            "http://www.sardine.com",
+            "http://www.disembodiment.com",
+            "http://www.carol.com",
+            "http://www.form.com"
+         ]
+      },
+      {
+         "name":"http://www.fleece.com",
+         "parent":98,
+         "children":[
+            "http://www.chowder.com",
+            "http://www.shower.com",
+            "http://www.melody.com",
+            "http://www.quarter.com",
+            "http://www.rear.com"
+         ]
+      }
+   ]
+};
+  
+//************************************************
+//  Functions for parsing input json array into 
+// hierarchical json. D3 requires that json be
+// descendent from a root in order to build trees
+// from json data. This code builds all data, descendent 
+// from the first node of the graphNodeContainer array.
+//************************************************
+
+
+// Function for appending {"children:[]"} object on
+// each child node if no children object exists.
+// This is expected to properly parse the nodes for graphics.
+//************************************************
+
+
+  testData.graph_Node_Container.forEach(function(d){
+
+      var json_add = {"children":[]};
+
+      if(d.children)
+      {
+        var count = 0;
+        
+        d.children.forEach(function(e)
+        {
+          jsonString = JSON.stringify({"name":e});
+          d.children[count] = JSON.parse(jsonString);
+          d.children[count].children=[];
+          count++;
+        });
+      }
+    });
+
+
+
+function spliceArray(array)
+{
+
+   // removes nodes if they have no children. still accounted for 
+   // in graph by parent node displaying all children
+   var emptyChildrenNodes = _.remove(array, function(n)   
+   {
+      return n.children[0] == null;
+   });
+
+  
+   for (var i = 1; i < array.length; i++) 
+   {
+      // if a node has one child and that child            * this is a rare special case which 
+      // has no children remove from array               breaks the graphics. Likely not plausible in actual internet.
+      if (array[i].children.length == 1)
+      {
+         if (array[i].children[0].name != array[i + 1].name) 
+         {
+            array.splice(i,1);
+         }
+      }
+      
+   }
+
+   return array;
+   
+}
+
+
+// Function that traverses the array appending all 
+// child nodes at increasing depth from the root node.
+//************************************************
+
+function makeHierarchy(array)
+{
+   var hierarchy = [];
+  hierarchy.push(array[0]);
+
+   for(var i = 1; i < array.length; i++)
+   {
+       
+         hierarchy.push(array[i]);
+         
+       
+
+          var x = i - 1;
+          if (hierarchy[x].children != null) 
+          {
+             for(var j = 0; j < hierarchy[x].children.length; j++)
+             {
+                
+                if(hierarchy[i].name == hierarchy[x].children[j].name)
+                {
+                 
+                   hierarchy[x].children[j].children = hierarchy[i].children;
+
+                }
+
+             }
+          }
+         
+     }
+
+ return hierarchy;
+}
+
+var splicedArray = spliceArray(testData.graph_Node_Container);
+var hierarchical_json = makeHierarchy(splicedArray);
+
+// ***************** NOTE *****************************
+// Of several runs with test data only one node was not
+// represented by graph. That node is described in the above
+// *special case. 
+// ***************** NOTE *****************************
+
+
+
+// ************** Generate the tree diagram  *****************
+var margin = {top: 20, right: 120, bottom: 20, left: 120},
+ width = 10000 - margin.right - margin.left,
+ height = 500 - margin.top - margin.bottom;
+ 
+var i = 0;
+
+var tree = d3.layout.tree()
+ .size([height, width]);
+
+var diagonal = d3.svg.diagonal()
+ .projection(function(d) { return [d.y, d.x]; });
+
+var svg = d3.select("body").append("svg")
+ .attr("width", width + margin.right + margin.left)
+ .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+ .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+root = hierarchical_json[0];
+  
+update(root);
+
+function update(source) {
+
+  // Compute the new tree layout.
+  var nodes = tree(root);
+   links = tree.links(nodes);
+
+   //console.log(nodes);
+
+  // Normalize for fixed-depth.
+  nodes.forEach(function(d) { d.y = d.depth * 90; });
+
+  // Declare the nodes
+  var node = svg.selectAll("g.node")
+   .data(nodes, function(d) { return d.id || (d.id = ++i); });
+
+  // Enter the nodes.
+  var nodeEnter = node.enter().append("g")
+   .attr("class", "node")
+   .attr("transform", function(d) { 
+    return "translate(" + d.y + "," + d.x + ")"; });
+
+  nodeEnter.append("circle")
+   .attr("r", 5)
+   .style("fill", "#fff");
+
+  nodeEnter.append("text")
+   .attr("x", function(d) { 
+    return d.children || d._children ? -13 : 13; })
+   .attr("dy", ".35em")
+   .attr("text-anchor", function(d) { 
+    return d.children || d._children ? "end" : "start"; })
+   .text(function(d) { return d.name; })
+   .style("fill-opacity", 1);
+
+  // Declare the linksâ€¦
+  var link = svg.selectAll("path.link")
+   .data(links, function(d) { return d.target.id; });
+
+  // Enter the links.
+  link.enter().insert("path", "g")
+   .attr("class", "link")
+   .attr("d", diagonal);
+
+}
+
+}).call(this);
+
+</script>
+ 
+  </body>
+</html>

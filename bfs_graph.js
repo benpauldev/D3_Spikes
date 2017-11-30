@@ -1,245 +1,141 @@
+/*
+
+
+
+Project: Perseus Web Crawler
+Title: bfs_graph
+Description: This is a js script that recieves an array of 
+              json and produces a graph. The json represents 
+              url's that have been scraped from links actual
+              web html. The graph represents a breadth first search
+              travesal of nodes, with each node being a url.
+Author: Benjamin Fondell
+Date: 10/24/2017
+
+
+*********USAGE*************************************
+
+Include: <script type="text/javascript" src="bfs_graph.js"></script>
+
+Input: call buildGraph_bfs(array) with an array of json in form:
+
+          {'ID':id,
+            'Starting_url': starting_url,
+            'Search_type': search type,
+            'graph_Node_Container': [
+                  {'name':url,
+                  'parent': parent,
+                  'children' : []
+                  }
+                  .......]}
+
+Output: The output of the graph is assigned to a designated div in the html.
+        the syntax for selecting the div: d3.select(#id). 
+        Attributes may be appended to this div in the form of referencing the 
+        svg object.
+
+        To see the output in context see below: *html assignment 
+
+*/
 
 
 
 
-(function(jsonData) {
+
+
+buildGraph_bfs function(jsonData) 
+{
   var makeChildren, diagonal, diameter, div, duration, height, i, radius, 
-  makeParents, focusIn, root, saveAndUpdate, svg, tree, testData, update, zoom;
+  makeParents, focusIn, root, saveAndUpdate, svg, tree, update, zoom;
 
-  testData = [
-  {
-    "name": "url",
-    "children": [
+
+//************************************************
+//  Functions for parsing input json array into 
+// hierarchical json. D3 requires that json be
+// descendent from a root in order to build trees
+// from json data. This code builds all data, descendent 
+// from the first node of the graphNodeContainer array.
+//************************************************
+
+
+// Function for appending {"children:[]"} object on
+// each child node if no children object exists.
+// This is expected to properly parse the nodes for graphics.
+//************************************************
+
+  jsonData.graph_Node_Container.forEach(function(d){
+
+      var json_add = {"children":[]};
+
+      if(d.children)
       {
-        "name": "url",
-        "children": [
-          {
-            "name": "url",
-            "children": [
-              {
-                "name": "url",
-                "someData": ""
-              },
-              {
-                "name": "url",
-                "someData": ""
-              },
-              {
-                "name": "url",
-                "someData": ""
-              },
-              {
-                "name": "url",
-                "someData": ""
-              }
-            ]
-          },
-          {
-            "name": "url",
-            "children": [
-              {
-                "name": "url",
-                "someData": ""
-              },
-              {
-                "name": "url",
-                "someData": ""
-              },
-              {
-                "name": "url",
-                "someData": ""
-              },
-              {
-                "name": "url",
-                "someData": ""
-              },
-              {
-                "name": "url",
-                "someData": ""
-              }
-            ]
-          },
-          {
-            "name": "url",
-            "children": [
-              {
-                "name": "url",
-                "someData": ""
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "name": "url",
-        "children": [
-          {
-            "name": "url",
-            "children": [
-              {
-                "name": "url",
-                "someData": ""
-              },
-              {
-                "name": "url",
-                "someData": ""
-              },
-              {
-                "name": "url",
-                "someData": ""
-              },
-              {
-                "name": "url",
-                "someData": ""
-              },
-              {
-                "name": "url",
-                "someData": ""
-              }
-            ]
-          },
-          {
-            "name": "url",
-            "someData": ""
-          },
-          {
-            "name": "url",
-            "someData": ""
-          },
-          {
-            "name": "url",
-            "someData": ""
-          },
-          {
-            "name": "url",
-            "someData": ""
-          },
-          {
-            "name": "url",
-            "someData": ""
-          },
-          {
-            "name": "url",
-            "someData": ""
-          }
-        ]
-      },
-      {
-        "name": "url",
-        "children": [
-          {
-            "name": "url",
-            "someData": ""
-          },
-          {
-            "name": "url",
-            "someData": ""
-          },
-          {
-            "name": "url",
-            "someData": ""
-          },
-          {
-            "name": "url",
-            "someData": ""
-          }
-        ]
-      },
-      {
-        "children": [
-          {
-            "name": "url",
-            "someData": ""
-          }
-        ]
-      },
-      {
-        "name": "url",
-        "children": [
-          {
-            "name": "url",
-            "someData": ""
-          },
-          {
-            "name": "url",
-            "someData": ""
-          },
-          {
-            "name": "url",
-            "someData": ""
-          },
-          {
-            "name": "url",
-            "someData": ""
-          },
-          {
-            "name": "url",
-            "someData": ""
-          },
-          {
-            "name": "url",
-            "someData": ""
-          },
-          {
-            "name": "url",
-            "someData": ""
-          },
-          {
-            "name": "url",
-            "someData": ""
-          },
-          {
-            "name": "url",
-            "someData": ""
-          },
-          {
-            "name": "url",
-            "children": [
-              {
-                "name": "url",
-                "someData": ""
-              },
-              {
-                "name": "url",
-                "someData": ""
-              },
-              {
-                "name": "url",
-                "someData": ""
-              },
-              {
-                "name": "url",
-                "someData": ""
-              }
-            ]
-          },
-          {
-            "name": "url",
-            "someData": ""
-          },
-          {
-            "name": "url",
-            "someData": ""
-          },
-          {
-            "name": "url",
-            "someData": ""
-          }
-        ]
+        var count = 0;
+        
+        d.children.forEach(function(e)
+        {
+          jsonString = JSON.stringify({"name":e});
+          d.children[count] = JSON.parse(jsonString);
+          d.children[count].children=[];
+          count++;
+        });
       }
-    ]
-  }
-];
+    });
+
+
+// Function that traverses the array appending all 
+// child nodes at increasing depth from the root node.
+//************************************************
+
+function makeHierarchy(array)
+{
+
+
+   var i = array.length - 1;
+   var j = 0;
+
+   for(i; i > -1; i--)
+   {
+      
+      if (array[i].parent == -1) 
+      {
+        
+         return array;
+      }
+      if(array[i].children)
+      {
+       
+
+         for(j = 0;j < array[array[i].parent].children.length; j++)
+         {
+           
+            if (array[array[i].parent].children[j].name == array[i].name) 
+            {
+             
+               array[array[i].parent].children[j].children = array[i].children;
+            }
+         }
+      }
+   }
+
+}
+
+
+var hierarchical_json = makeHierarchy(jsonData.graph_Node_Container);
+
+//*********************************************************************
+//***********************  D3 Graphics ********************************
+//*********************************************************************
 
   window.current_nodes = [];
 
   update = function(source) {
     var link, links, node, nodeEnter, nodeExit, nodeUpdate, nodes;
+
+
     nodes = tree.nodes(root).reverse();
     links = tree.links(nodes);
 
 
-    
     nodes.forEach(function(d) 
     {
       return d.y = d.depth * 80;
@@ -257,7 +153,7 @@
       
       var clicked_same_node;
       clicked_same_node = false;
-      //console.log(d.name);
+ 
       if (window.current_nodes.length > 0) {
         if (d.id === window.current_nodes[window.current_nodes.length - 1][0].id) 
         {
@@ -444,23 +340,34 @@
     return svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
   };
 
-  div = d3.select("#focus");
 
+  //*******************
+  //  * html assignment
+  //*******************
+  // this is the div  (#focus) that will be populated by the graph
+  div = d3.select("#output_area");
+  // the svg is the graph item that is made and inserted into the html with a number of attributes
   svg = div.insert("svg").attr("viewbox", "0 0 " + diameter / 2+ "," + diameter / 2).attr("width", "100%").attr("height", "100%")
   .append("g").attr("transform", "translate(" + diameter/2 + "," + diameter/2 + ")").append("g")
   .call(d3.behavior.zoom().scaleExtent([1, 8]).on("zoom", zoom));
 
+  
 
-  root = testData[0];
+
+
+  // root node for building d3 tree 
+  root = hierarchical_json[0];
 
   root.x0 = height / 2;
 
   root.y0 = 0;
 
+  //calls update to build tree for first time 
   update(root);
 
 
-}).call(this);
+};
+
 
 
 

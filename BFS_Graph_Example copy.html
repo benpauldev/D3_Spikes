@@ -1,0 +1,285 @@
+<head>
+  <link rel="stylesheet" href="main.css" type="text/css">
+</head>
+<html>
+  <body>
+      <div class='container-fluid'>
+        <div class='row'>
+          <div class='col-md-2'>
+          </div>
+        </div>
+        <div class='row'>
+          <div class='col-mid-12'>
+            <div id='list'>
+              <div class='row'>
+                <div class='col-md-2'></div>
+                <div class='col-md-8'>
+                  <div class='row'>
+                    <div class='col-md-8'>
+                        <svg width="960" height="1060"></svg>
+                        <div id='vis' ></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.12.0/lodash.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script>
+
+
+
+(function(jsonData) {
+  var makeChildren, diagonal, diameter, div, duration, height, i, radius, 
+  makeParents, focusIn, root, saveAndUpdate, svg, tree, testData, update, zoom;
+
+ testData = {
+   "ID":"exampleDFS",
+   "Starting_url":"http://www.aardvark.com",
+   "Search_type":"BFS",
+   "graph_Node_Container":[
+      {
+         "name":"http://www.aardvark.com",
+         "parent":-1,
+         "children":[
+            "http://www.captain.com",
+            "http://www.hunt.com",
+            "http://www.examiner.com",
+            "http://www.gelding.com",
+            "http://www.chaos.com",
+            "http://www.arithmetic.com",
+            "http://www.demur.com",
+            "http://www.ride.com"
+         ]
+      },
+      {
+         "name":"http://www.captain.com",
+         "parent":0,
+         "children":[
+            "http://www.cravat.com"
+         ]
+      },
+      {
+         "name":"http://www.hunt.com",
+         "parent":0,
+         "children":[
+            "http://www.mailbox.com",
+            "http://www.lunch.com",
+            "http://www.armoire.com",
+            "http://www.drake.com",
+            "http://www.sculpting.com",
+            "http://www.luck.com",
+            "http://www.plasterboard.com",
+            "http://www.glass.com",
+            "http://www.cook.com",
+            "http://www.anxiety.com"
+         ]
+      },
+      {
+         "name":"http://www.examiner.com",
+         "parent":0,
+         "children":[
+            "http://www.rambler.com",
+            "http://www.model.com",
+            "http://www.religion.com",
+            "http://www.headlight.com"
+         ]
+      },
+      {
+         "name":"http://www.gelding.com",
+         "parent":0,
+         "children":[
+            "http://www.flatboat.com",
+            "http://www.milk.com",
+            "http://www.engineering.com",
+            "http://www.skullcap.com",
+            "http://www.harmony.com",
+            "http://www.meal.com",
+            "http://www.session.com",
+            "http://www.granny.com"
+         ]
+      },
+      {
+         "name":"http://www.chaos.com",
+         "parent":0,
+         "children":[
+            "http://www.kitten.com",
+            "http://www.hurdler.com",
+            "http://www.alarm.com",
+            "http://www.pocketbook.com",
+            "http://www.flower.com",
+            "http://www.drum.com",
+            "http://www.apartment.com",
+            "http://www.double.com",
+            "http://www.beef.com",
+            "http://www.burst.com"
+         ]
+      },
+      {
+         "name":"http://www.arithmetic.com",
+         "parent":0,
+         "children":[
+            "http://www.hang.com",
+            "http://www.drop.com",
+            "http://www.importance.com",
+            "http://www.azimuth.com",
+            "http://www.eyebrow.com",
+            "http://www.disadvantage.com",
+            "http://www.commerce.com"
+         ]
+      },
+      {
+         "name":"http://www.demur.com",
+         "parent":0,
+         "children":[
+            "http://www.reception.com",
+            "http://www.outback.com",
+            "http://www.sister-in-law.com",
+            "http://www.hurdler.com",
+            "http://www.lie.com",
+            "http://www.difficulty.com",
+            "http://www.project.com",
+            "http://www.buggy.com"
+         ]
+      },
+      {
+         "name":"http://www.ride.com",
+         "parent":0,
+         "children":[
+            "http://www.millennium.com",
+            "http://www.kidney.com",
+            "http://www.dud.com",
+            "http://www.raise.com"
+         ]
+      },
+      {
+         "name":"http://www.cravat.com",
+         "parent":1,
+         "children":[
+            "http://www.n.com",
+            "http://www.beheading.com",
+            "http://www.piece.com"
+         ]
+      }
+   ]
+};
+  
+//console.log(testData.graph_Node_Container[testData.graph_Node_Container[2].parent]);
+
+  testData.graph_Node_Container.forEach(function(d){
+
+      var json_add = {"children":[]};
+
+      if(d.children)
+      {
+        var count = 0;
+        
+        d.children.forEach(function(e)
+        {
+          jsonString = JSON.stringify({"name":e});
+          d.children[count] = JSON.parse(jsonString);
+          d.children[count].children=[];
+          count++;
+        });
+      }
+    });
+
+
+function makeHierarchy(array)
+{
+
+
+   var i = array.length - 1;
+   var j = 0;
+
+   for(i; i > -1; i--)
+   {
+      //console.log(array[i].name);
+      if (array[i].parent == -1) 
+      {
+         //console.log(array[i].name);
+         //console.log("return");  
+         return array;
+      }
+      if(array[i].children)
+      {
+         //console.log(array[i].name);
+         //console.log(array[i].parent);
+
+         for(j = 0;j < array[array[i].parent].children.length; j++)
+         {
+            //console.log(array[array[i].parent].name);
+            if (array[array[i].parent].children[j].name == array[i].name) 
+            {
+               //console.log("PARENT: "+array[array[i].parent].children[j].name + " CHILD: " + array[i].name);
+               array[array[i].parent].children[j].children = array[i].children;
+            }
+         }
+      }
+   }
+
+}
+
+
+var hierarchical_json = makeHierarchy(testData.graph_Node_Container);
+
+var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height"),
+    g = svg.append("g").attr("transform", "translate(" + (width / 2 + 40) + "," + (height / 2 + 90) + ")");
+
+
+
+var tree = d3.tree()
+  .size([2 * Math.PI, 500])
+  .separation(function(a, b) { return (a.parent == b.parent ? 1 : 2) / a.depth; });
+
+var d3data = d3.hierarchy(hierarchical_json[0]);
+
+var root = tree(d3data);
+
+var link = g.selectAll(".link")
+    .data(root.links())
+    .enter().append("path")
+      .attr("class", "link")
+      .attr("d", d3.linkRadial()
+          .angle(function(d) { return d.x; })
+          .radius(function(d) { return d.y; }));
+
+  var node = g.selectAll(".node")
+    .data(root.descendants())
+    .enter().append("g")
+      .attr("class", function(d) { return "node" + (d.children ? " node--internal" : " node--leaf"); })
+      .attr("transform", function(d) { return "translate(" + radialPoint(d.x, d.y) + ")"; });
+
+  node.append("circle")
+      .attr("r", 2.5);
+
+  node.append("text")
+      .attr("dy", "0.31em")
+      .attr("x", function(d) { return d.x < Math.PI === !d.children ? 6 : -6; })
+      .attr("text-anchor", function(d) { return d.x < Math.PI === !d.children ? "start" : "end"; })
+      .attr("transform", function(d) { return "rotate(" + (d.x < Math.PI ? d.x - Math.PI / 2 : d.x + Math.PI / 2) * 180 / Math.PI + ")"; })
+
+function radialPoint(x, y) 
+{
+  return [(y = +y) * Math.cos(x -= Math.PI / 2), y * Math.sin(x)];
+}
+
+
+
+
+}).call(this);
+
+
+  </script>
+  </body>
+</html>
+
+
+

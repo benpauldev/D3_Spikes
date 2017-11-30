@@ -1,0 +1,493 @@
+<head>
+  <link rel="stylesheet" href="graph.css" type="text/css">
+</head>
+<html>
+  <body>
+      <div class='container-fluid'>
+        <div class='row'>
+          <div class='col-md-8' style='padding: 20px;'>
+            <div>
+                Click a node to zoom on it and it's adjacent nodes. Click on whitespace to see parent adjacencies. 
+              </p>
+              <p>
+                Zoooming is also functional though touchy as of now. (Mouse must be over node to zoom.) 
+              </p>
+              <p>
+                Graph is populated with JSON test data. Can be populated with URL information as needed. 
+              </p>
+            </div>
+          </div>
+          <div class='col-md-2'>
+          </div>
+        </div>
+        <div class='row'>
+          <div class='col-mid-12'>
+            <div id='list'>
+              <div class='row'>
+                <div class='col-md-2'></div>
+                <div class='col-md-8'>
+                  <div class='row'>
+                    <div class='col-md-8'>
+                      <div id='focus' style='color:gray;height:1000px;width:1000px;border-style: solid;border-color: black;
+                      overflow-y: scroll; overflow-x: scroll;'>
+                        <div id='vis' ></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.12.0/lodash.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script>
+
+
+
+(function(jsonData) {
+  var makeChildren, diagonal, diameter, div, duration, height, i, radius, 
+  makeParents, focusIn, root, saveAndUpdate, svg, tree, testData, update, zoom;
+
+ testData = {
+   "ID":"exampleDFS",
+   "Starting_url":"http://www.aardvark.com",
+   "Search_type":"BFS",
+   "graph_Node_Container":[
+      {
+         "name":"http://www.aardvark.com",
+         "parent":-1,
+         "children":[
+            "http://www.captain.com",
+            "http://www.hunt.com",
+            "http://www.examiner.com",
+            "http://www.gelding.com",
+            "http://www.chaos.com",
+            "http://www.arithmetic.com",
+            "http://www.demur.com",
+            "http://www.ride.com"
+         ]
+      },
+      {
+         "name":"http://www.captain.com",
+         "parent":0,
+         "children":[
+            "http://www.cravat.com"
+         ]
+      },
+      {
+         "name":"http://www.hunt.com",
+         "parent":0,
+         "children":[
+            "http://www.mailbox.com",
+            "http://www.lunch.com",
+            "http://www.armoire.com",
+            "http://www.drake.com",
+            "http://www.sculpting.com",
+            "http://www.luck.com",
+            "http://www.plasterboard.com",
+            "http://www.glass.com",
+            "http://www.cook.com",
+            "http://www.anxiety.com"
+         ]
+      },
+      {
+         "name":"http://www.examiner.com",
+         "parent":0,
+         "children":[
+            "http://www.rambler.com",
+            "http://www.model.com",
+            "http://www.religion.com",
+            "http://www.headlight.com"
+         ]
+      },
+      {
+         "name":"http://www.gelding.com",
+         "parent":0,
+         "children":[
+            "http://www.flatboat.com",
+            "http://www.milk.com",
+            "http://www.engineering.com",
+            "http://www.skullcap.com",
+            "http://www.harmony.com",
+            "http://www.meal.com",
+            "http://www.session.com",
+            "http://www.granny.com"
+         ]
+      },
+      {
+         "name":"http://www.chaos.com",
+         "parent":0,
+         "children":[
+            "http://www.kitten.com",
+            "http://www.hurdler.com",
+            "http://www.alarm.com",
+            "http://www.pocketbook.com",
+            "http://www.flower.com",
+            "http://www.drum.com",
+            "http://www.apartment.com",
+            "http://www.double.com",
+            "http://www.beef.com",
+            "http://www.burst.com"
+         ]
+      },
+      {
+         "name":"http://www.arithmetic.com",
+         "parent":0,
+         "children":[
+            "http://www.hang.com",
+            "http://www.drop.com",
+            "http://www.importance.com",
+            "http://www.azimuth.com",
+            "http://www.eyebrow.com",
+            "http://www.disadvantage.com",
+            "http://www.commerce.com"
+         ]
+      },
+      {
+         "name":"http://www.demur.com",
+         "parent":0,
+         "children":[
+            "http://www.reception.com",
+            "http://www.outback.com",
+            "http://www.sister-in-law.com",
+            "http://www.hurdler.com",
+            "http://www.lie.com",
+            "http://www.difficulty.com",
+            "http://www.project.com",
+            "http://www.buggy.com"
+         ]
+      },
+      {
+         "name":"http://www.ride.com",
+         "parent":0,
+         "children":[
+            "http://www.millennium.com",
+            "http://www.kidney.com",
+            "http://www.dud.com",
+            "http://www.raise.com"
+         ]
+      },
+      {
+         "name":"http://www.cravat.com",
+         "parent":1,
+         "children":[
+            "http://www.n.com",
+            "http://www.beheading.com",
+            "http://www.piece.com"
+         ]
+      }
+   ]
+};
+  
+//console.log(testData.graph_Node_Container[testData.graph_Node_Container[2].parent]);
+
+  testData.graph_Node_Container.forEach(function(d){
+
+      var json_add = {"children":[]};
+
+      if(d.children)
+      {
+        var count = 0;
+        
+        d.children.forEach(function(e)
+        {
+          jsonString = JSON.stringify({"name":e});
+          d.children[count] = JSON.parse(jsonString);
+          d.children[count].children=[];
+          count++;
+        });
+      }
+    });
+
+
+function makeHierarchy(array)
+{
+
+
+   var i = array.length - 1;
+   var j = 0;
+
+   for(i; i > -1; i--)
+   {
+      //console.log(array[i].name);
+      if (array[i].parent == -1) 
+      {
+         //console.log(array[i].name);
+         //console.log("return");  
+         return array;
+      }
+      if(array[i].children)
+      {
+         //console.log(array[i].name);
+         //console.log(array[i].parent);
+
+         for(j = 0;j < array[array[i].parent].children.length; j++)
+         {
+            //console.log(array[array[i].parent].name);
+            if (array[array[i].parent].children[j].name == array[i].name) 
+            {
+               console.log("PARENT: "+array[array[i].parent].children[j].name + " CHILD: " + array[i].name);
+               array[array[i].parent].children[j].children = array[i].children;
+            }
+         }
+      }
+   }
+
+}
+
+
+var hierarchical_json = makeHierarchy(testData.graph_Node_Container);
+
+console.log(hierarchical_json);
+
+  window.current_nodes = [];
+
+  update = function(source) {
+    var link, links, node, nodeEnter, nodeExit, nodeUpdate, nodes;
+
+
+    nodes = tree.nodes(root).reverse();
+    links = tree.links(nodes);
+
+
+    nodes.forEach(function(d) 
+    {
+      return d.y = d.depth * 80;
+    });
+    
+    node = svg.selectAll("g.node").data(nodes, function(d) 
+    {
+      return d.id || (d.id = ++i);
+    });
+    
+    nodeEnter = node.enter().append("g").attr("class", "node")
+    .attr("transform", function(d) {}, {}, "translate(" + source.y0 + "," + source.x0 + ")")
+    .on("mouseover", function(d) 
+    {
+      nodeEnter.append("text").attr("dy", ".15em").attr("text-anchor", function(d) {
+        if (d.x < 180) {
+          return "start";
+        } else {
+          return "end";
+        }
+      }).attr("transform", function(d) {
+        if (d.x < 180) {
+          return "translate(8)";
+        } else {
+          return "rotate(180)translate(-8)";
+        }
+      }).text(function(d) {
+        return d.name;
+      })
+    })
+    .on("click", function(d) 
+    {
+      
+      var clicked_same_node;
+      clicked_same_node = false;
+      //console.log(d.name);
+      if (window.current_nodes.length > 0) {
+        if (d.id === window.current_nodes[window.current_nodes.length - 1][0].id) 
+        {
+          clicked_same_node = true;
+          d3.event.stopPropagation();
+        }
+      }
+      if (!clicked_same_node) {
+        return saveAndUpdate(d);
+      }
+    });
+
+    
+    nodeEnter.append("circle").attr("r", 1e-6).style("fill", function(d) {
+      if (d == root) return "red"; 
+      else return "light-gray";
+    })
+
+    
+    nodeUpdate = node.transition().duration(duration).attr("transform", function(d) {
+      return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")";
+    });
+    
+    nodeUpdate.select("circle").attr("r", 2).style("fill", function(d) {
+      if (d == root) return "red"; 
+      else return "light-gray";
+    });
+    
+    nodeUpdate.select("text").style("fill-opacity", 1).attr("dy", ".31em").attr("text-anchor", function(d) {
+      if (d.x < 180) {
+        return "start";
+      } else {
+        return "end";
+      }
+    }).attr("transform", function(d) {
+      if (d.x < 180) {
+        return "translate(8)";
+      } else {
+        return "rotate(180)translate(-8)";
+      }
+    });
+
+    nodeExit = node.exit().transition().duration(duration).attr("transform", function(d) {
+      return "translate(" + source.y + "," + source.x + ")";
+    }).remove();
+    nodeExit.select("circle").attr("r", 1e-6);
+    nodeExit.select("text").style("fill-opacity", 1e-6);
+    link = svg.selectAll("path.link").data(links, function(d) {
+      return d.target.id;
+    });
+
+    link.enter().insert("path", "g").attr("class", "link").attr("d", function(d) {
+      var o;
+      o = {
+        x: source.x0,
+        y: source.y0
+      };
+      return diagonal({
+        source: o,
+        target: o
+      });
+    });
+
+    link.transition().duration(duration).attr("d", diagonal);
+
+    link.exit().transition().duration(duration).attr("d", function(d) {
+      var o;
+      o = {
+        x: source.x,
+        y: source.y
+      };
+      return diagonal({
+        source: o,
+        target: o
+      });
+    }).remove();
+    return nodes.forEach(function(d) {
+      d.x0 = d.x;
+      return d.y0 = d.y;
+    });
+
+  };
+
+
+  makeChildren = function(d) {
+    var c, nodes;
+    c = d;
+    nodes = [];
+    while (c.parent) {
+      nodes.push(c.parent.children);
+      c = c.parent;
+    }
+    return nodes;
+  };
+
+  focusIn = function() {
+    var count, d, set;
+    if (window.current_nodes.length > 0) {
+      set = window.current_nodes.pop();
+      d = set[0];
+      count = 0;
+      d.parent._children = set[1];
+      if (d.parent._children) {
+        while (d.parent) {
+          d.parent.children = set[1][count];
+          count++;
+          d = d.parent;
+        }
+        return update(d);
+      }
+    }
+  };
+
+
+  saveAndUpdate = function(d) {
+    window.current_nodes.push([d, makeChildren(d)]);
+    while (d.parent) {
+      d.parent._children = d.parent.children;
+      d.parent.children = [
+        _.find(d.parent.children, function(e) {
+          return e.name === d.name;
+        })
+      ];
+      d = d.parent;
+    }
+
+    d3.event.stopPropagation();
+    return update(d);
+  };
+
+  makeParents = function(n, nodes) {
+    var count;
+    count = nodes.length - 1;
+    while (n.parent) {
+      n.parent.children = nodes[count];
+      count -= 1;
+      n = n.parent;
+    }
+
+
+    return n;
+  };
+
+  $("body").click(function() 
+  {
+    return focusIn()
+  });
+
+  diameter = 1080;
+
+  height = diameter - 150;
+
+  radius = diameter / 4;
+
+  root = void 0;
+
+  tree = d3.layout.tree().size([360, radius - 120]);
+
+  i = 0;
+
+  duration = 2000;
+
+  diagonal = d3.svg.diagonal.radial().projection(function(d) 
+  {
+    return [d.y, d.x / 180 * Math.PI];
+  });
+
+  zoom = function() 
+  {
+    return svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+  };
+
+  div = d3.select("#focus");
+
+  svg = div.insert("svg")
+    .attr("viewbox", "0 0 " + diameter / 2+ "," + diameter / 2)
+    .attr("width", "100%")
+    .attr("height", "100%")
+      .append("g")
+      .attr("transform", "translate(" + diameter/2 + "," + diameter/2 + ")")
+      .append("g")
+      .call(d3.behavior.zoom().scaleExtent([1, 8]).on("zoom", zoom));
+
+
+  root = hierarchical_json[0];
+
+  root.x0 = height / 2;
+
+  root.y0 = 0;
+
+  update(root);
+
+
+}).call(this);
+
+
+  </script>
+  </body>
+</html>
+
+
+

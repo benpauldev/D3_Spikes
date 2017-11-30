@@ -1,0 +1,22 @@
+{
+  "name": "cs467perseuswebv2_d3_graph",
+  "version": "1.0.0",
+  "description": "Capstone Project for graphical API",
+  "main": "graph.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "graph.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/benpauldev/cs467/D3_Spikes.git"
+  },
+  "author": "Benjamin Fondell",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "express": "^4.16.2",
+    "jquery": "^3.2.1",
+    "request": "^2.83.0"
+  }
+}
